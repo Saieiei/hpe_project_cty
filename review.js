@@ -16,7 +16,7 @@ const octokit = new Octokit({
 const geminiApiKey = process.env.GEMINI_API_KEY;
 const geminiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
-// Get the diff from the PR
+// Get the diff and PR metadata
 async function getPullRequestDiff() {
   try {
     const { data: pr } = await octokit.pulls.get({
@@ -27,7 +27,12 @@ async function getPullRequestDiff() {
 
     const diffUrl = pr.diff_url;
     const { data: diff } = await axios.get(diffUrl);
-    return diff;
+
+    return {
+      diff,
+      author: pr.user.login,
+      title: pr.title,
+    };
   } catch (error) {
     console.error('Error fetching PR diff:', error.message);
     process.exit(1);
@@ -35,22 +40,21 @@ async function getPullRequestDiff() {
 }
 
 // Call Gemini for a code review
-async function getGeminiReview(diff) {
+async function getGeminiReview(diff, author, title) {
   try {
     const prompt = `Summarize the following GitHub pull request in a professional tone. Provide:
-1. **PR Title**
-2. **Author Name**
+1. **PR Title**: ${title}
+2. **Author Name**: ${author}
 3. **Key Comments** (e.g., what triggered the change, any duplication/conflict mentioned)
 4. **Diff Summary** (list files and lines changed)
 5. **Final Summary** (concise explanation of what was fixed or introduced)\n\n${diff}`;
+
     const response = await axios.post(
       `${geminiEndpoint}?key=${geminiApiKey}`,
       {
         contents: [
           {
-            parts: [
-              { text: prompt }
-            ]
+            parts: [{ text: prompt }]
           }
         ]
       },
@@ -86,7 +90,7 @@ async function postReviewComment(review) {
 
 // Main runner
 (async () => {
-  const diff = await getPullRequestDiff();
+  const { diff, author, title } = await getPullRequestDiff();
 
   // Filter out non-reviewable files
   const excludePatterns = ['**/*.json', '**/*.md'];
@@ -110,6 +114,6 @@ async function postReviewComment(review) {
     return;
   }
 
-  const review = await getGeminiReview(filteredDiff);
+  const review = await getGeminiReview(filteredDiff, author, title);
   await postReviewComment(review);
 })();
