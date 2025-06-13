@@ -42,12 +42,16 @@ async function getPullRequestDiff() {
 // Call Gemini for a code review
 async function getGeminiReview(diff, author, title) {
   try {
-    const prompt = `Summarize the following GitHub pull request in a professional tone. Provide:
+    const prompt = `You are a professional software engineer reviewing a GitHub pull request.
+Analyze the following code changes and provide a review with constructive feedback. Your response should include:
 1. **PR Title**: ${title}
 2. **Author Name**: ${author}
-3. **Key Comments** (e.g., what triggered the change, any duplication/conflict mentioned)
-4. **Diff Summary** (list files and lines changed)
-5. **Final Summary** (concise explanation of what was fixed or introduced)\n\n${diff}`;
+3. **Strengths**: What was done well in the code
+4. **Suggestions for Improvement**: Specific areas where the code can be improved (e.g., readability, performance, structure, security, duplication)
+5. **Potential Issues or Bugs**: If any
+6. **Final Recommendation**: Approve / Needs changes / Comment only
+
+Here is the diff:\n\n${diff}`;
 
     const response = await axios.post(
       `${geminiEndpoint}?key=${geminiApiKey}`,
