@@ -63,7 +63,7 @@ async function getPullRequestComments() {
 // Call Gemini for a code review
 async function getGeminiReview(diff, author, title, comments, numFilesChanged) {
   const commentsSection = comments
-    ? `## 💬 Review Comments from Developers\n\n${comments}\n\n---\n`
+    ? `## Review Comments from Developers\n\n${comments}\n\n---\n`
     : '';
 
   const prompt = `
@@ -71,23 +71,22 @@ You are an expert software engineer tasked with reviewing a pull request using t
 
 ---
 
-## 📝 PR Summary
+## PR Summary
 
-**Title**: ${title}  
-**Author**: ${author}  
-**Files Changed**: ${numFilesChanged}
+**Title** : ${title}  
+**Author** : ${author}  
+**Files Changed** : ${numFilesChanged}
 
----
 
-${commentsSection}## 🔍 Code Changes (Diff)
+
+${commentsSection}## Code Changes (Diff)
 
 \`\`\`diff
 ${diff}
 \`\`\`
 
----
 
-### ✅ Instructions:
+### Instructions:
 1. Summarize the PR based on the diff ${comments ? 'and the developer comments' : ''}.
 2. Give structured feedback for each file.
 3. Use GitHub Markdown for formatting.
@@ -107,7 +106,7 @@ ${diff}
       }
     );
 
-    return response.data.candidates?.[0]?.content?.parts?.[0]?.text || '⚠️ No feedback generated.';
+    return response.data.candidates?.[0]?.content?.parts?.[0]?.text || ' No feedback generated.';
   } catch (error) {
     console.error('Error calling Gemini API:', error.message);
     process.exit(1);
@@ -121,9 +120,9 @@ async function postReviewComment(review) {
       owner,
       repo,
       issue_number: pullRequestNumber,
-      body: `### 🤖 Gemini AI Review Report\n\n${review}`,
+      body: `### Gemini AI Review Report\n\n${review}`,
     });
-    console.log('✅ Review posted successfully.');
+    console.log('Review posted successfully.');
   } catch (error) {
     console.error('Error posting comment:', error.message);
     process.exit(1);
@@ -153,7 +152,7 @@ async function postReviewComment(review) {
     .join('\n');
 
   if (!filteredDiff.trim()) {
-    console.log('⚠️ No reviewable code after filtering.');
+    console.log('No reviewable code after filtering.');
     return;
   }
 
