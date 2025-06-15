@@ -40,18 +40,41 @@ async function getPullRequestDiff() {
 }
 
 // Call Gemini for a code review
-async function getGeminiReview(diff, author, title) {
+async function getGeminiReview(diff, author, title, numFilesChanged) {
   try {
-    const prompt = `You are a professional software engineer reviewing a GitHub pull request.
-Analyze the following code changes and provide a review with constructive feedback. Your response should include:
-1. **PR Title**: ${title}
-2. **Author Name**: ${author}
-3. **Strengths**: What was done well in the code
-4. **Suggestions for Improvement**: Specific areas where the code can be improved (e.g., readability, performance, structure, security, duplication)
-5. **Potential Issues or Bugs**: If any
-6. **Final Recommendation**: Approve / Needs changes / Comment only
+    const prompt = `You are a professional software engineer and reviewer assisting in summarizing a GitHub Pull Request.
 
-Here is the diff:\n\n${diff}`;
+Analyze the following code diff and generate a structured review report using GitHub-flavored markdown in this format:
+
+---
+
+## 📝 PR Summary
+
+**Title**: ${title}  
+**Author**: ${author}  
+**Total Files Changed**: ${numFilesChanged}
+
+---
+
+## 🔍 File-wise Breakdown
+
+For each file, provide:
+
+### 📄 File: \`<filename>\`
+
+- **Code Summary**: What changes were made.
+- **Comment Summary** _(if present)_: What was said in code comments and their relevance.
+- **Recommendations**: Suggestions for improvements, optimizations, or flagging issues.
+
+---
+
+Use clear sections per file and be concise yet technical.
+
+### 🔧 Here's the code diff:
+\`\`\`diff
+${diff}
+\`\`\`
+`;
 
     const response = await axios.post(
       `${geminiEndpoint}?key=${geminiApiKey}`,
@@ -83,9 +106,9 @@ async function postReviewComment(review) {
       owner,
       repo,
       issue_number: pullRequestNumber,
-      body: `**Gemini Review**\n\n${review}`,
+      body: `### 🤖 Gemini AI Review Report\n\n${review}`,
     });
-    console.log('Review posted.');
+    console.log('✅ Review posted successfully.');
   } catch (error) {
     console.error('Error posting comment:', error.message);
     process.exit(1);
@@ -114,10 +137,18 @@ async function postReviewComment(review) {
     .join('\n');
 
   if (!filteredDiff.trim()) {
-    console.log('No reviewable code after filtering.');
+    console.log('⚠️ No reviewable code after filtering.');
     return;
   }
 
-  const review = await getGeminiReview(filteredDiff, author, title);
+  // Count changed files
+  const changedFiles = new Set();
+  filteredDiff.split('\n').forEach(line => {
+    const match = line.match(/^diff --git a\/(.+?) b\/.+$/);
+    if (match) changedFiles.add(match[1]);
+  });
+  const numFilesChanged = changedFiles.size;
+
+  const review = await getGeminiReview(filteredDiff, author, title, numFilesChanged);
   await postReviewComment(review);
 })();
