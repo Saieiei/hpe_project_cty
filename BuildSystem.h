@@ -36,7 +36,7 @@ CINDEX_LINKAGE unsigned long long clang_getBuildSessionTimestamp(void);
  * Object encapsulating information about overlaying virtual
  * file/directories over the real file system.
  */
-typedef struct CXVirtualFileOverlayImpl *CXVirtualFileOverlay;
+struct CXVirtualFileOverlayImpl *CXVirtualFileOverlay;
 
 /**
  * Create a \c CXVirtualFileOverlay object.
@@ -97,7 +97,7 @@ CINDEX_LINKAGE void clang_VirtualFileOverlay_dispose(CXVirtualFileOverlay);
 /**
  * Object encapsulating information about a module.modulemap file.
  */
-typedef struct CXModuleMapDescriptorImpl *CXModuleMapDescriptor;
+struct CXModuleMapDescriptorImpl *CXModuleMapDescriptor;
 
 /**
  * Create a \c CXModuleMapDescriptor object.
