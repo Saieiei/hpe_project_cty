@@ -114,12 +114,6 @@ TEST(CFGDominatorTree, ControlDependency) {
   BuildResult Result = BuildCFG(Code);
   EXPECT_EQ(BuildResult::BuiltCFG, Result.getStatus());
 
-  //                  1st if  2nd if
-  //  [B5 (ENTRY)]  -> [B4] -> [B3] -> [B2] -> [B1] -> [B0 (EXIT)]
-  //                    \        \              /         /
-  //                     \        ------------->         /
-  //                      ------------------------------>
-
   CFG *cfg = Result.getCFG();
 
   // Basic correctness checks.
@@ -166,13 +160,6 @@ TEST(CFGDominatorTree, ControlDependencyWithLoops) {
   BuildResult Result = BuildCFG(Code);
   EXPECT_EQ(BuildResult::BuiltCFG, Result.getStatus());
 
-  //                           <- [B2] <-
-  //                          /          \
-  // [B8 (ENTRY)] -> [B7] -> [B6] ---> [B5] -> [B4] -> [B3]
-  //                   \       |         \              /
-  //                    \      |          <-------------
-  //                     \      \
-  //                      --------> [B1] -> [B0 (EXIT)]
 
   CFG *cfg = Result.getCFG();
 
