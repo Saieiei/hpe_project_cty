@@ -1,28 +1,32 @@
 const fetch = require('node-fetch');
 const axios = require('axios');
+const { Octokit } = require('@octokit/rest');
 
-// GitHub environment variables
+// Extract repo and PR number
 const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
 const pullRequestNumber = process.env.GITHUB_REF.split('/')[2];
 
-// Load Octokit
-const { Octokit } = require('@octokit/rest');
+// Set up Octokit and Gemini API
 const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
-  request: { fetch }
+  request: { fetch },
 });
-
-// Gemini setup
 const geminiApiKey = process.env.GEMINI_API_KEY;
 const geminiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
-// Get the diff and PR metadata
-async function getPullRequestDiff() {
+// Fetch PR metadata, diff, and comments
+async function getPullRequestData() {
   try {
     const { data: pr } = await octokit.pulls.get({
       owner,
       repo,
       pull_number: pullRequestNumber,
+    });
+
+    const { data: comments } = await octokit.issues.listComments({
+      owner,
+      repo,
+      issue_number: pullRequestNumber,
     });
 
     const diffUrl = pr.diff_url;
@@ -32,109 +36,99 @@ async function getPullRequestDiff() {
       diff,
       author: pr.user.login,
       title: pr.title,
+      comments,
     };
   } catch (error) {
-    console.error('Error fetching PR diff:', error.message);
+    console.error('Error fetching PR data:', error.message);
     process.exit(1);
   }
 }
 
-// Get review comments with user info
-async function getPullRequestComments() {
-  try {
-    const comments = await octokit.pulls.listReviewComments({
-      owner,
-      repo,
-      pull_number: pullRequestNumber,
-      per_page: 100,
-    });
-
-    if (!comments.data.length) return '';
-
-    return comments.data.map(comment => {
-      return `**${comment.user.login}** on \`${comment.path}\`:\n> ${comment.body}`;
-    }).join('\n\n');
-  } catch (error) {
-    console.error('Error fetching PR comments:', error.message);
-    return '';
-  }
+// Format public PR comments into markdown
+function formatPRComments(comments) {
+  if (!comments.length) return 'No public PR comments.';
+  return comments.map(c => `**${c.user.login}**: ${c.body}`).join('\n\n');
 }
 
-// Call Gemini for a code review
-async function getGeminiReview(diff, author, title, comments, numFilesChanged) {
-  const commentsSection = comments
-    ? `## Review Comments from Developers\n\n${comments}\n\n---\n`
-    : '';
+// Prepare Gemini prompt for paragraph-based review
+async function getGeminiReview(diff, author, title, numFilesChanged, commentBlock) {
+  const prompt = `You are a senior software engineer helping review a GitHub Pull Request.
 
-  const prompt = `
-You are an expert software engineer tasked with reviewing a pull request using the following details.
-
----
+Write a structured, paragraph-style review using GitHub-flavored markdown with the following format:
 
 ## PR Summary
 
-**Title** : ${title}  
-**Author** : ${author}  
-**Files Changed** : ${numFilesChanged}
+**Title**: ${title}  
+**Author**: ${author}  
+**Total Files Changed**: ${numFilesChanged}
 
+## File-wise Breakdown
 
+For each file:
 
-${commentsSection}## Code Changes (Diff)
+### File: \`<filename>\`
+
+- Code Summary: Describe the key code changes in that file.
+- Comment Summary: If any PR-level comments are related to this file, summarize them and include the commenter names.
+- Recommendations: Suggest improvements or flag concerns if needed.
+
+Use clear headings, avoid tables, and keep the writing technical and concise.
+
+## Public PR Comments
+
+${commentBlock}
+
+## Code Diff
 
 \`\`\`diff
 ${diff}
 \`\`\`
-
-
-### Instructions:
-1. Summarize the PR based on the diff ${comments ? 'and the developer comments' : ''}.
-2. Give structured feedback for each file.
-3. Use GitHub Markdown for formatting.
-4. Make it easy for reviewers to quickly understand impact and suggestions.
 `;
 
   try {
     const response = await axios.post(
       `${geminiEndpoint}?key=${geminiApiKey}`,
       {
-        contents: [{ parts: [{ text: prompt }] }]
+        contents: [{ parts: [{ text: prompt }] }],
       },
       {
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       }
     );
 
-    return response.data.candidates?.[0]?.content?.parts?.[0]?.text || ' No feedback generated.';
+    return (
+      response.data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      'No review content generated.'
+    );
   } catch (error) {
     console.error('Error calling Gemini API:', error.message);
     process.exit(1);
   }
 }
 
-// Post review comment to PR
+// Post review to the PR
 async function postReviewComment(review) {
   try {
     await octokit.issues.createComment({
       owner,
       repo,
       issue_number: pullRequestNumber,
-      body: `### Gemini AI Review Report\n\n${review}`,
+      body: `## Gemini AI Review Report\n\n${review}`,
     });
     console.log('Review posted successfully.');
   } catch (error) {
-    console.error('Error posting comment:', error.message);
+    console.error('Error posting review comment:', error.message);
     process.exit(1);
   }
 }
 
-// Main runner
+// Main function
 (async () => {
-  const { diff, author, title } = await getPullRequestDiff();
-  const comments = await getPullRequestComments();
+  const { diff, author, title, comments } = await getPullRequestData();
 
-  // Filter out non-reviewable files
+  // Filter out non-code files
   const excludePatterns = ['**/*.json', '**/*.md'];
   const diffLines = diff.split('\n');
   const filteredDiff = diffLines
@@ -156,14 +150,23 @@ async function postReviewComment(review) {
     return;
   }
 
-  // Count changed files
+  // Count number of changed files
   const changedFiles = new Set();
   filteredDiff.split('\n').forEach(line => {
     const match = line.match(/^diff --git a\/(.+?) b\/.+$/);
     if (match) changedFiles.add(match[1]);
   });
-  const numFilesChanged = changedFiles.size;
 
-  const review = await getGeminiReview(filteredDiff, author, title, comments, numFilesChanged);
+  const numFilesChanged = changedFiles.size;
+  const formattedComments = formatPRComments(comments);
+
+  const review = await getGeminiReview(
+    filteredDiff,
+    author,
+    title,
+    numFilesChanged,
+    formattedComments
+  );
+
   await postReviewComment(review);
 })();
