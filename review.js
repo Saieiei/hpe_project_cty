@@ -14,7 +14,7 @@ const octokit = new Octokit({
 const geminiApiKey = process.env.GEMINI_API_KEY;
 const geminiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
-// Fetch PR metadata, diff, and comments
+// Fetch PR metadata, file-level diffs, and comments
 async function getPullRequestData() {
   try {
     const { data: pr } = await octokit.pulls.get({
@@ -29,14 +29,17 @@ async function getPullRequestData() {
       issue_number: pullRequestNumber,
     });
 
-    const diffUrl = pr.diff_url;
-    const { data: diff } = await axios.get(diffUrl);
+    const { data: files } = await octokit.pulls.listFiles({
+      owner,
+      repo,
+      pull_number: pullRequestNumber,
+    });
 
     return {
-      diff,
       author: pr.user.login,
       title: pr.title,
       comments,
+      files,
     };
   } catch (error) {
     console.error('Error fetching PR data:', error.message);
@@ -50,8 +53,8 @@ function formatPRComments(comments) {
   return comments.map(c => `**${c.user.login}**: ${c.body}`).join('\n\n');
 }
 
-// Prepare Gemini prompt for paragraph-based review
-async function getGeminiReview(diff, author, title, numFilesChanged, commentBlock) {
+// Prepare Gemini prompt using per-file structured patch data
+async function getGeminiReview(fileSummaries, author, title, numFilesChanged, commentBlock) {
   const prompt = `You are a senior software engineer helping review a GitHub Pull Request.
 
 Write a structured, paragraph-style review using GitHub-flavored markdown with the following format:
@@ -72,10 +75,11 @@ For each file:
 
 Use clear headings, give as points instead of para, avoid tables, and keep the writing technical and concise.
 
+${fileSummaries}
+
 ## Public PR Comments
 
-${commentBlock}
-`;
+${commentBlock}`;
 
   try {
     const response = await axios.post(
@@ -118,42 +122,33 @@ async function postReviewComment(review) {
 
 // Main function
 (async () => {
-  const { diff, author, title, comments } = await getPullRequestData();
+  const { author, title, comments, files } = await getPullRequestData();
 
-  // Filter out non-code files
-  const excludePatterns = ['**/*.json', '**/*.md'];
-  const diffLines = diff.split('\n');
-  const filteredDiff = diffLines
-    .filter(line => {
-      const match = line.match(/^diff --git a\/(.+?) b\/(.+?)$/);
-      if (match) {
-        const filePath = match[1];
-        return !excludePatterns.some(pattern => {
-          const regex = new RegExp(pattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*'));
-          return regex.test(filePath);
-        });
-      }
-      return true;
-    })
-    .join('\n');
+  const excludeExtensions = ['.json', '.md'];
+  const filteredFiles = files.filter(file =>
+    !excludeExtensions.some(ext => file.filename.endsWith(ext))
+  );
 
-  if (!filteredDiff.trim()) {
+  if (filteredFiles.length === 0) {
     console.log('No reviewable code after filtering.');
     return;
   }
 
-  // Count number of changed files
-  const changedFiles = new Set();
-  filteredDiff.split('\n').forEach(line => {
-    const match = line.match(/^diff --git a\/(.+?) b\/.+$/);
-    if (match) changedFiles.add(match[1]);
-  });
+  const fileSummaries = filteredFiles
+    .map(file => {
+      return `### File: \`${file.filename}\`
 
-  const numFilesChanged = changedFiles.size;
+\`\`\`diff
+${file.patch || ''}
+\`\`\``;
+    })
+    .join('\n\n');
+
+  const numFilesChanged = filteredFiles.length;
   const formattedComments = formatPRComments(comments);
 
   const review = await getGeminiReview(
-    filteredDiff,
+    fileSummaries,
     author,
     title,
     numFilesChanged,
