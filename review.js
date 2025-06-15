@@ -1,22 +1,22 @@
 const fetch = require('node-fetch');
 const axios = require('axios');
+const { Octokit } = require('@octokit/rest');
 
-// GitHub environment variables
+// Extract GitHub environment variables
 const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
 const pullRequestNumber = process.env.GITHUB_REF.split('/')[2];
 
-// Load Octokit
-const { Octokit } = require('@octokit/rest');
+// Authenticate with GitHub
 const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
   request: { fetch }
 });
 
-// Gemini setup
+// Gemini configuration
 const geminiApiKey = process.env.GEMINI_API_KEY;
 const geminiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
-// Get the diff and PR metadata
+// Fetch PR diff and metadata
 async function getPullRequestDiff() {
   try {
     const { data: pr } = await octokit.pulls.get({
@@ -34,12 +34,12 @@ async function getPullRequestDiff() {
       title: pr.title,
     };
   } catch (error) {
-    console.error('Error fetching PR diff:', error.message);
+    console.error('❌ Error fetching PR diff:', error.message);
     process.exit(1);
   }
 }
 
-// Call Gemini for a code review
+// Query Gemini for a review summary
 async function getGeminiReview(diff, author, title, numFilesChanged) {
   try {
     const prompt = `You are a professional software engineer and reviewer assisting in summarizing a GitHub Pull Request.
@@ -92,14 +92,14 @@ ${diff}
       }
     );
 
-    return response.data.candidates?.[0]?.content?.parts?.[0]?.text || 'No feedback generated.';
+    return response.data.candidates?.[0]?.content?.parts?.[0]?.text || '⚠️ No feedback generated.';
   } catch (error) {
-    console.error('Error calling Gemini API:', error.message);
+    console.error('❌ Error calling Gemini API:', error.message);
     process.exit(1);
   }
 }
 
-// Post review comment to PR
+// Post the review as a comment on the PR
 async function postReviewComment(review) {
   try {
     await octokit.issues.createComment({
@@ -110,12 +110,12 @@ async function postReviewComment(review) {
     });
     console.log('✅ Review posted successfully.');
   } catch (error) {
-    console.error('Error posting comment:', error.message);
+    console.error('❌ Error posting comment:', error.message);
     process.exit(1);
   }
 }
 
-// Main runner
+// Main function
 (async () => {
   const { diff, author, title } = await getPullRequestDiff();
 
