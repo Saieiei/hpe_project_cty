@@ -63,7 +63,7 @@ For each file, provide:
 ### 📄 File: \`<filename>\`
 
 - **Code Summary**: What changes were made.
-- **Comment Summary** _(if present)_: What was said in code comments and their relevance.
+- **Comment Summary** _(if present)_: What was said in comments by any contributors along with their name and their relevance.
 - **Recommendations**: Suggestions for improvements, optimizations, or flagging issues.
 
 ---
