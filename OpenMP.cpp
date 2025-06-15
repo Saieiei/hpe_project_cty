@@ -43,31 +43,6 @@
 #include "llvm/Frontend/OpenMP/OMPConstants.h"
 #include "llvm/Support/CommandLine.h"
 
-using namespace Fortran::lower::omp;
-using namespace Fortran::common::openmp;
-
-static llvm::cl::opt<bool> DumpAtomicAnalysis("fdebug-dump-atomic-analysis");
-
-//===----------------------------------------------------------------------===//
-// Code generation helper functions
-//===----------------------------------------------------------------------===//
-
-static void genOMPDispatch(lower::AbstractConverter &converter,
-                           lower::SymMap &symTable,
-                           semantics::SemanticsContext &semaCtx,
-                           lower::pft::Evaluation &eval, mlir::Location loc,
-                           const ConstructQueue &queue,
-                           ConstructQueue::const_iterator item);
-
-static void processHostEvalClauses(lower::AbstractConverter &converter,
-                                   semantics::SemanticsContext &semaCtx,
-                                   lower::StatementContext &stmtCtx,
-                                   lower::pft::Evaluation &eval,
-                                   mlir::Location loc);
-
-namespace {
-/// Structure holding information that is needed to pass host-evaluated
-/// information to later lowering stages.
 class HostEvalInfo {
 public:
   // Allow this function access to private members in order to initialize them.
@@ -79,8 +54,7 @@ public:
 
   /// Fill \c vars with values stored in \c ops.
   ///
-  /// The order in which values are stored matches the one expected by \see
-  /// bindOperands().
+  /// The order in which values are stored matches the one expected by bindOperands().
   void collectValues(llvm::SmallVectorImpl<mlir::Value> &vars) const {
     vars.append(ops.loopLowerBounds);
     vars.append(ops.loopUpperBounds);
@@ -99,19 +73,24 @@ public:
       vars.push_back(ops.threadLimit);
   }
 
+  /// Return the number of expected operands based on ops.
+  size_t expectedOperandCount() const {
+    return ops.loopLowerBounds.size() +
+           ops.loopUpperBounds.size() +
+           ops.loopSteps.size() +
+           (ops.numTeamsLower ? 1 : 0) +
+           (ops.numTeamsUpper ? 1 : 0) +
+           (ops.numThreads ? 1 : 0) +
+           (ops.threadLimit ? 1 : 0);
+  }
+
   /// Update \c ops, replacing all values with the corresponding block argument
-  /// in \c args.
-  ///
-  /// The order in which values are stored in \c args is the same as the one
-  /// used by \see collectValues().
+  /// in \c args. The order must match collectValues().
   void bindOperands(llvm::ArrayRef<mlir::BlockArgument> args) {
-    assert(args.size() ==
-               ops.loopLowerBounds.size() + ops.loopUpperBounds.size() +
-                   ops.loopSteps.size() + (ops.numTeamsLower ? 1 : 0) +
-                   (ops.numTeamsUpper ? 1 : 0) + (ops.numThreads ? 1 : 0) +
-                   (ops.threadLimit ? 1 : 0) &&
-           "invalid block argument list");
+    assert(args.size() == expectedOperandCount() &&
+           "bindOperands: argument count mismatch with ops state");
     int argIndex = 0;
+
     for (size_t i = 0; i < ops.loopLowerBounds.size(); ++i)
       ops.loopLowerBounds[i] = args[argIndex++];
 
@@ -133,6 +112,7 @@ public:
     if (ops.threadLimit)
       ops.threadLimit = args[argIndex++];
   }
+
 
   /// Update \p clauseOps and \p ivOut with the corresponding host-evaluated
   /// values and Fortran symbols, respectively, if they have already been
