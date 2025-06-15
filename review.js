@@ -62,8 +62,6 @@ Write a structured, paragraph-style review using GitHub-flavored markdown with t
 **Author**: ${author}  
 **Total Files Changed**: ${numFilesChanged}
 
-## File-wise Breakdown
-
 For each file:
 
 ### File: \`<filename>\`
@@ -72,18 +70,11 @@ For each file:
 - Comment Summary: If any PR-level comments are related to this file, summarize them and include the commenter names.
 - Recommendations: Suggest improvements or flag concerns if needed.
 
-Use clear headings, avoid tables, and keep the writing technical and concise.
+Use clear headings, give as points instead of para, avoid tables, and keep the writing technical and concise.
 
 ## Public PR Comments
 
 ${commentBlock}
-
-## Code Diff
-
-\`\`\`diff
-${diff}
-\`\`\`
-`;
 
   try {
     const response = await axios.post(
