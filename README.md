@@ -1,6 +1,6 @@
-# LLVM KNOWLEDGE MINER
-
 <div align="center">
+
+# LLVM KNOWLEDGE MINER - Smart Reviewer for LLVM PRs
 
 [![Node.js Version](https://img.shields.io/badge/Node.js-18.x-brightgreen?logo=node.js)](https://nodejs.org/)
 [![Gemini API](https://img.shields.io/badge/LLM-Gemini%201.5%20Flash-orange?logo=google)](https://ai.google.dev/)
@@ -50,26 +50,31 @@ This project is designed for maintainers and reviewers of large codebases like L
 
 ## 🛠 Built With
 
-- [Node.js](https://nodejs.org/)
-- [Octokit (GitHub REST API)](https://github.com/octokit/rest.js/)
-- [Axios](https://axios-http.com/)
-- [GitHub Actions](https://docs.github.com/en/actions)
-- [Gemini 1.5 Flash API](https://ai.google.dev/gemini-api/docs/api-key?authuser=1#set-api-env-var)
+This project uses the following major libraries and services:
 
----
+- [![Node.js](https://img.shields.io/badge/Node.js-18.x-brightgreen?logo=node.js)](https://nodejs.org/)
+
+- [![Octokit](https://img.shields.io/badge/Octokit-GitHub%20REST%20API-black?logo=github)](https://github.com/octokit/rest.js/)
+
+- [![Axios](https://img.shields.io/badge/Axios-HTTP%20Client-5A29E4?logo=axios)](https://axios-http.com/)
+
+- [![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-2088FF?logo=githubactions)](https://docs.github.com/en/actions)
+
+- [![Gemini](https://img.shields.io/badge/Gemini%201.5%20Flash-LLM-orange?logo=google)](https://ai.google.dev/)
 
 ### 📚 Example Output
 
 ![Sample Output of the Reviewer Bot](https://github.com/user-attachments/assets/c57ac9c6-998e-4e47-bd1f-e742cf4cedb0)
+---
 
 ## 🚀 Getting Started
 
 ### 📌 Prerequisites
   - A GitHub account
+    
   - Node.js installed
+    
   - Gemini API key from Google AI Studio
-
----
 
 ### 🔧 Installation
 
@@ -87,7 +92,7 @@ This project is designed for maintainers and reviewers of large codebases like L
 
     Navigate to your repo → Settings → Secrets and variables → Actions → New repository secret
 
-Add:
+  Add:
 
   | Secret Name      | Description                               |
   | ---------------- | ----------------------------------------- |
@@ -127,7 +132,6 @@ Add:
   ```bash
     node review.js
    ```
----
 
 ## 🧩 **Folder Structure**
 ```
@@ -140,6 +144,32 @@ Add:
 └── README.md                 # Project documentation
 ```
 
+## 👥 **Contributors**
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <a href="https://github.com/Nandees13">
+        <img src="https://avatars.githubusercontent.com/u/121081633?v=4" width="80" />
+        <br /><sub><b>Nandeeswaran K</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/14240">
+        <img src="https://avatars.githubusercontent.com/u/118149969?v=4" width="80" />
+        <br /><sub><b>Yashwanth D</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/MADHANRAJ-PARAMESWARAN">
+        <img src="https://avatars.githubusercontent.com/u/151919818?v=4" width="80" />
+        <br /><sub><b>Madhanraj P</b></sub>
+      </a>
+    </td>
+  </tr>
+</table>
+
+
 ### 🔎 Some Heads Up of the Project
 
 <div align="center"> 
@@ -151,4 +181,7 @@ Add:
 [![Stars](https://img.shields.io/github/stars/Nandees13/hpe_project?style=social)](https://github.com/Nandees13/hpe_project/stargazers)
 [![Forks](https://img.shields.io/github/forks/Nandees13/hpe_project?style=social)](https://github.com/Nandees13/hpe_project/network/members) </div>
 
-<div align="center"> ![Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=Nandees13&repo=hpe_project&layout=compact) </div>
+<div align="center"> 
+  
+![Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=Nandees13&repo=hpe_project&layout=compact)
+</div>
