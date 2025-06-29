@@ -5,7 +5,6 @@
 [![Gemini API](https://img.shields.io/badge/LLM-Gemini%201.5%20Flash-orange?logo=google)](https://ai.google.dev/)
 [![PR Reviewer Bot](https://img.shields.io/badge/Bot-PR%20Review%20Bot-success)](https://github.com/Nandees13/hpe_project)
 
-
 ## 📖 About The Project
 
   **LLVM Knowledge Miner** is a GitHub-integrated automation system that enhances pull request (PR) reviews using **Gemini 1.5 Flash**, enabling intelligent, file-wise analysis of code diffs, PR comments, and historical PR activity.
@@ -13,7 +12,6 @@
 This project is designed for maintainers and reviewers of large codebases like LLVM to streamline review cycles with structured summaries, improvement suggestions, and consistent markdown-based reports – all powered by LLMs and GitHub Actions.
 
 ---
-
 
 ### ✨ Features
 
@@ -44,6 +42,7 @@ This project is designed for maintainers and reviewers of large codebases like L
 
 ---
 
+### 📚 Example Output
 
 
 ## 🚀 Getting Started
@@ -57,7 +56,8 @@ This project is designed for maintainers and reviewers of large codebases like L
 
 ### 🔧 Installation
 
-1. **Fork this repository**
+1. **Fork this repository**![WhatsApp Image 2025-06-27 at 23 28 13_2173d157](https://github.com/user-attachments/assets/c57ac9c6-998e-4e47-bd1f-e742cf4cedb0)
+
 
 2. **Clone the repo**
    ```bash
@@ -76,7 +76,7 @@ Add:
   | Secret Name      | Description                               |
   | ---------------- | ----------------------------------------- |
   | `GITHUB_TOKEN`   | Auto-injected by GitHub for Actions usage |
-  | `GEMINI_API_KEY` | Your Gemini 1.5 Flash API key             |
+  | `GEMINI_API_KEY` |     Your Gemini 1.5 Flash API key         |
 
 5. **Ensure project structure**
 ```   
