@@ -2,14 +2,12 @@
 
 <div align="center">
 
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Nandees13/hpe_project/main.yml?label=CI&logo=githubactions)](https://github.com/Nandees13/hpe_project/actions)
 [![Node.js Version](https://img.shields.io/badge/Node.js-18.x-brightgreen?logo=node.js)](https://nodejs.org/)
 [![Gemini API](https://img.shields.io/badge/LLM-Gemini%201.5%20Flash-orange?logo=google)](https://ai.google.dev/)
 [![PR Reviewer Bot](https://img.shields.io/badge/Bot-PR%20Review%20Bot-success)](https://github.com/Nandees13/hpe_project)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Nandees13/hpe_project/main.yml?label=CI&logo=githubactions)](https://github.com/Nandees13/hpe_project/actions)
 
 </div>
-
----
 
 ## 📚 Table of Contents
 
@@ -25,11 +23,7 @@
 - [🧩 Folder Structure](#-folder-structure)
 - [🔎 Some Heads Up of the Project](#-some-heads-up-of-the-project)
 
----
-
 ## 📖 About The Project
-
-<div align="center">  ![LLVM Knowledge Miner](https://github.com/user-attachments/assets/a3c43048-a098-4a5b-9588-0831e7b31760)  </div>
 
   **LLVM Knowledge Miner** is a GitHub-integrated automation system that enhances pull request (PR) reviews using **Gemini 1.5 Flash**, enabling intelligent, file-wise analysis of code diffs, PR comments, and historical PR activity.
 
@@ -46,13 +40,13 @@ This project is designed for maintainers and reviewers of large codebases like L
 
 ## 🛠️ Tech Stack
 
-| Technology     | Role                         |
-|----------------|------------------------------|
-| **Node.js**    | Script runtime               |
-| **Octokit**    | GitHub REST API integration  |
-| **Axios**      | HTTP client for Gemini API   |
-| **GitHub Actions** | CI/CD for triggering workflow |
-| **Gemini 1.5 Flash** | LLM inference for review generation |
+  | Technology     | Role                         |
+  |----------------|------------------------------|
+  | **Node.js**    | Script runtime               |
+  | **Octokit**    | GitHub REST API integration  |
+  | **Axios**      | HTTP client for Gemini API   |
+  | **GitHub Actions** | CI/CD for triggering workflow |
+  | **Gemini 1.5 Flash** | LLM inference for review generation |
 
 ## 🛠 Built With
 
@@ -67,7 +61,6 @@ This project is designed for maintainers and reviewers of large codebases like L
 ### 📚 Example Output
 
 ![Sample Output of the Reviewer Bot](https://github.com/user-attachments/assets/c57ac9c6-998e-4e47-bd1f-e742cf4cedb0)
----
 
 ## 🚀 Getting Started
 
@@ -101,24 +94,34 @@ Add:
   | `GITHUB_TOKEN`   | Auto-injected by GitHub for Actions usage |
   | `GEMINI_API_KEY` |     Your Gemini 1.5 Flash API key         |
 
-5. **Ensure project structure**
-```   
-llvm-knowledge-miner/
-├── .github/
-│   └── workflows/
-│       └── main.yml           # GitHub PR trigger
-├── review.js                  # Review engine
-├── package.json               # Dependencies
-└── README.md                  # This file
-```
-
 ---
 
 ## ⚙️ **Usage**
 
 - Whenever a pull request is opened or updated, the following pipeline runs automatically:
 
-  📌 GitHub PR Trigger  →  ⚙️ GitHub Actions Workflow  →  🧠 review.js (Node.js + Octokit + Axios) →  📥 PR Metadata Collection  →  🕘 Historical PR Diff Retrieval  →  📝 Structured Prompt Generation  →  🔮 Gemini 1.5 Flash Inference  →  🗒️ Markdown Review Generation & Posting
+<div align="center">
+
+### Workflow Overview
+
+**GitHub PR Trigger**  
+  ↓  
+**GitHub Actions Workflow**  
+  ↓  
+**review.js** (Node.js + Octokit + Axios)  
+  ↓  
+**Pull Request Metadata Collection**  
+  ↓  
+**Historical PR Diff Retrieval**  
+  ↓  
+**Structured Prompt Generation**  
+  ↓  
+**Gemini 1.5 Flash Inference**  
+  ↓  
+**Markdown Review Generation & Posting**
+
+</div>
+
 
 - To test manually:
   ```bash
