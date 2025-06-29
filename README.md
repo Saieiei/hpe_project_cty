@@ -1,3 +1,11 @@
+# 🔍 LLVM Knowledge Miner
+
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Nandees13/hpe_project/main.yml?label=CI&logo=githubactions)](https://github.com/Nandees13/hpe_project/actions)
+[![Node.js Version](https://img.shields.io/badge/Node.js-18.x-brightgreen?logo=node.js)](https://nodejs.org/)
+[![Gemini API](https://img.shields.io/badge/LLM-Gemini%201.5%20Flash-orange?logo=google)](https://ai.google.dev/)
+[![PR Reviewer Bot](https://img.shields.io/badge/Bot-PR%20Review%20Bot-success)](https://github.com/Nandees13/hpe_project)
+
+
 ## 📖 About The Project
 
   **LLVM Knowledge Miner** is a GitHub-integrated automation system that enhances pull request (PR) reviews using **Gemini 1.5 Flash**, enabling intelligent, file-wise analysis of code diffs, PR comments, and historical PR activity.
@@ -5,6 +13,7 @@
 This project is designed for maintainers and reviewers of large codebases like LLVM to streamline review cycles with structured summaries, improvement suggestions, and consistent markdown-based reports – all powered by LLMs and GitHub Actions.
 
 ---
+
 
 ### ✨ Features
 
@@ -15,6 +24,15 @@ This project is designed for maintainers and reviewers of large codebases like L
 - 📝 Modular architecture with Node.js, Octokit, and Axios 
 - 📂 File-level breakdown with recommendations
 
+## 🛠️ Tech Stack
+
+| Technology     | Role                         |
+|----------------|------------------------------|
+| **Node.js**    | Script runtime               |
+| **Octokit**    | GitHub REST API integration  |
+| **Axios**      | HTTP client for Gemini API   |
+| **GitHub Actions** | CI/CD for triggering workflow |
+| **Gemini 1.5 Flash** | LLM inference for review generation |
 
 ## 🛠 Built With
 
@@ -96,4 +114,13 @@ llvm-knowledge-miner/
 └── README.md                 # Project documentation
 ```
 
+### 🔎 Some Heads Up of the Project
 
+[![Open Issues](https://img.shields.io/github/issues/Nandees13/hpe_project?color=blueviolet)](https://github.com/Nandees13/hpe_project/issues)
+[![Closed PRs](https://img.shields.io/github/issues-pr-closed/Nandees13/hpe_project?color=success)](https://github.com/Nandees13/hpe_project/pulls?q=is%3Apr+is%3Aclosed)
+[![Last Commit](https://img.shields.io/github/last-commit/Nandees13/hpe_project?color=yellow)](https://github.com/Nandees13/hpe_project/commits)
+[![Top Language](https://img.shields.io/github/languages/top/Nandees13/hpe_project?color=critical)](https://github.com/Nandees13/hpe_project)
+[![Stars](https://img.shields.io/github/stars/Nandees13/hpe_project?style=social)](https://github.com/Nandees13/hpe_project/stargazers)
+[![Forks](https://img.shields.io/github/forks/Nandees13/hpe_project?style=social)](https://github.com/Nandees13/hpe_project/network/members)
+
+![Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=Nandees13&repo=hpe_project&layout=compact)
