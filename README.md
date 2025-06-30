@@ -166,9 +166,20 @@ This project uses the following major libraries and services:
         <br /><sub><b>Madhanraj P</b></sub>
       </a>
     </td>
+    <td align="center">
+      <a href="https://github.com/Lalitha-SR">
+        <img src="https://avatars.githubusercontent.com/u/145996677?v=4" width="80" />
+        <br /><sub><b>Lalitha S R</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/monishan11">
+        <img src="https://avatars.githubusercontent.com/u/181441011?v=4" width="80" />
+        <br /><sub><b>Monishan A</b></sub>
+      </a>
+    </td>
   </tr>
 </table>
-
 
 ### 🔎 Some Heads Up of the Project
 
