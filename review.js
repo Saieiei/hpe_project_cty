@@ -13,41 +13,32 @@ const octokit = new Octokit({
 const geminiApiKey = process.env.GEMINI_API_KEY;
 const geminiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
-// Fetch PR metadata: title, author, comments, and file diffs
+// Fetch PR metadata, comments, and file diffs
 async function getPullRequestData() {
   try {
-    const { data: pr } = await octokit.pulls.get({
-      owner,
-      repo,
-      pull_number: pullRequestNumber,
-    });
+    const { data: pr } = await octokit.pulls.get({ owner, repo, pull_number: pullRequestNumber });
 
-    // Fetch general issue-level comments
+    // PR-level (issue) comments
     const { data: issueComments } = await octokit.issues.listComments({
       owner,
       repo,
       issue_number: pullRequestNumber,
     });
 
-    // Fetch inline file-level review comments
+    // Inline review comments (must be submitted via Review)
     const { data: reviewComments } = await octokit.pulls.listReviewComments({
       owner,
       repo,
       pull_number: pullRequestNumber,
     });
 
-    const allComments = [...issueComments, ...reviewComments];
-
-    const { data: files } = await octokit.pulls.listFiles({
-      owner,
-      repo,
-      pull_number: pullRequestNumber,
-    });
+    const { data: files } = await octokit.pulls.listFiles({ owner, repo, pull_number: pullRequestNumber });
 
     return {
       author: pr.user.login,
       title: pr.title,
-      comments: allComments,
+      issueComments,
+      reviewComments,
       files,
     };
   } catch (error) {
@@ -56,13 +47,14 @@ async function getPullRequestData() {
   }
 }
 
-// Format PR comments for summary
-function formatPRComments(comments) {
-  if (!comments.length) return 'No public PR comments.';
-  return comments.map(c => `**${c.user.login}**: ${c.body}`).join('\n\n');
+// Format inline review comments per file
+function formatInlineCommentsPerFile(reviewComments, filename) {
+  const fileComments = reviewComments.filter(c => c.path === filename);
+  if (!fileComments.length) return 'No public PR comments on this file.';
+  return fileComments.map(c => `- **${c.user.login}**: ${c.body}`).join('\n');
 }
 
-// Fetch similar past changes from recent merged PRs for a file
+// Fetch up to 3 historical patches that touched the same file
 async function fetchPreviousDiffs(filename) {
   const { data: pulls } = await octokit.pulls.list({
     owner,
@@ -96,8 +88,8 @@ async function fetchPreviousDiffs(filename) {
   return matchingSummaries;
 }
 
-// Construct prompt and query Gemini API
-async function getGeminiReview(fileSummaries, author, title, numFilesChanged, commentBlock) {
+// Build the Gemini prompt
+async function getGeminiReview(fileSummaries, author, title, numFilesChanged, globalCommentBlock) {
   const prompt = `You are a senior software engineer helping review a GitHub Pull Request.
 
 Write a structured, paragraph-style review using GitHub-flavored markdown with the following format:
@@ -121,9 +113,9 @@ Use paragraph format for each section and write professionally.
 
 ${fileSummaries}
 
-## Public PR Comments
+## General PR Comments
 
-${commentBlock}`;
+${globalCommentBlock}`;
 
   try {
     const response = await axios.post(
@@ -148,7 +140,7 @@ ${commentBlock}`;
   }
 }
 
-// Post the Gemini-generated review to the PR
+// Post the Gemini response as a review comment
 async function postReviewComment(review) {
   try {
     await octokit.issues.createComment({
@@ -164,9 +156,9 @@ async function postReviewComment(review) {
   }
 }
 
-// Main execution
+// Main
 (async () => {
-  const { author, title, comments, files } = await getPullRequestData();
+  const { author, title, issueComments, reviewComments, files } = await getPullRequestData();
 
   const excludeExtensions = ['.json', '.md'];
   const filteredFiles = files.filter(file =>
@@ -186,18 +178,25 @@ async function postReviewComment(review) {
       ? prevDiffs.map(p => `From PR #${p.number} by @${p.user}:\n\`\`\`diff\n${p.patch}\n\`\`\``).join('\n\n')
       : 'No similar historical changes found.';
 
-    fileSummaries += `### File: \`${file.filename}\`\n\n\`\`\`diff\n${file.patch || ''}\n\`\`\`\n\n**Previous PR Summary**:\n${historicalSummary}\n\n`;
+    const fileComments = formatInlineCommentsPerFile(reviewComments, file.filename);
+
+    fileSummaries += `### File: \`${file.filename}\`\n\n` +
+      `\`\`\`diff\n${file.patch || ''}\n\`\`\`\n\n` +
+      `**Comment Summary:**\n${fileComments}\n\n` +
+      `**Previous PR Summary:**\n${historicalSummary}\n\n`;
   }
 
   const numFilesChanged = filteredFiles.length;
-  const formattedComments = formatPRComments(comments);
+  const generalComments = issueComments.length
+    ? issueComments.map(c => `- **${c.user.login}**: ${c.body}`).join('\n')
+    : 'No general issue-level PR comments.';
 
   const review = await getGeminiReview(
     fileSummaries,
     author,
     title,
     numFilesChanged,
-    formattedComments
+    generalComments
   );
 
   await postReviewComment(review);
