@@ -82,7 +82,7 @@ This project uses the following major libraries and services:
 
 2. **Clone the repo**
    ```bash
-   git clone https://github.com/<your-username>/llvm-knowledge-miner.git
+   git clone https://github.com/Nandees13/hpe_project
    cd llvm-knowledge-miner
 
 3. **Install dependencies**
