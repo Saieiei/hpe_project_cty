@@ -1,8 +1,10 @@
-name: Gemini PR Review
+name: LLVM Knowledge Miner - PR Review
 
 on:
   pull_request:
     types: [opened, synchronize]
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: read
@@ -11,6 +13,10 @@ permissions:
 
 jobs:
   review:
+    if: |
+      github.event_name == 'pull_request' || 
+      (github.event.issue.pull_request != null && github.event_name == 'issue_comment')
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
