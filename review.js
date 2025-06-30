@@ -1,25 +1,19 @@
-// Required dependencies
-const fetch = require('node-fetch'); // Used by Octokit for HTTP requests
-const axios = require('axios'); // Used for making Gemini API requests
-const { Octokit } = require('@octokit/rest'); // GitHub REST API wrapper
+const fetch = require('node-fetch');
+const axios = require('axios');
+const { Octokit } = require('@octokit/rest');
 
-// Extract repository owner and name from GitHub Actions environment variable
 const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
-
-// Extract PR number from GitHub reference (e.g., refs/pull/123/merge → 123)
 const pullRequestNumber = process.env.GITHUB_REF.split('/')[2];
 
-// Initialize Octokit client with GitHub token
 const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
   request: { fetch },
 });
 
-// Gemini API configuration
 const geminiApiKey = process.env.GEMINI_API_KEY;
 const geminiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
-// Fetch PR metadata: author, title, comments, and file diffs
+// Fetch PR metadata: title, author, comments, and file diffs
 async function getPullRequestData() {
   try {
     const { data: pr } = await octokit.pulls.get({
@@ -28,11 +22,21 @@ async function getPullRequestData() {
       pull_number: pullRequestNumber,
     });
 
-    const { data: comments } = await octokit.issues.listComments({
+    // Fetch general issue-level comments
+    const { data: issueComments } = await octokit.issues.listComments({
       owner,
       repo,
       issue_number: pullRequestNumber,
     });
+
+    // Fetch inline file-level review comments
+    const { data: reviewComments } = await octokit.pulls.listReviewComments({
+      owner,
+      repo,
+      pull_number: pullRequestNumber,
+    });
+
+    const allComments = [...issueComments, ...reviewComments];
 
     const { data: files } = await octokit.pulls.listFiles({
       owner,
@@ -43,22 +47,22 @@ async function getPullRequestData() {
     return {
       author: pr.user.login,
       title: pr.title,
-      comments,
+      comments: allComments,
       files,
     };
   } catch (error) {
     console.error('Error fetching PR data:', error.message);
-    process.exit(1); // Exit if metadata fetch fails
+    process.exit(1);
   }
 }
 
-// Format PR comments into a readable Markdown block
+// Format PR comments for summary
 function formatPRComments(comments) {
   if (!comments.length) return 'No public PR comments.';
   return comments.map(c => `**${c.user.login}**: ${c.body}`).join('\n\n');
 }
 
-// Fetch past diffs from recently merged PRs that touched the same filename
+// Fetch similar past changes from recent merged PRs for a file
 async function fetchPreviousDiffs(filename) {
   const { data: pulls } = await octokit.pulls.list({
     owner,
@@ -67,9 +71,7 @@ async function fetchPreviousDiffs(filename) {
     per_page: 10,
   });
 
-  // Filter only merged PRs, excluding the current one
   const recentMerged = pulls.filter(pr => pr.merged_at && pr.number !== Number(pullRequestNumber));
-
   const matchingSummaries = [];
 
   for (const pr of recentMerged) {
@@ -79,7 +81,6 @@ async function fetchPreviousDiffs(filename) {
       pull_number: pr.number,
     });
 
-    // Check if the current file exists in the previous PR
     const match = changedFiles.find(file => file.filename === filename);
     if (match && match.patch) {
       matchingSummaries.push({
@@ -89,14 +90,13 @@ async function fetchPreviousDiffs(filename) {
       });
     }
 
-    // Limit to top 3 matching historical patches
     if (matchingSummaries.length >= 3) break;
   }
 
   return matchingSummaries;
 }
 
-// Build prompt and send to Gemini API for review generation
+// Construct prompt and query Gemini API
 async function getGeminiReview(fileSummaries, author, title, numFilesChanged, commentBlock) {
   const prompt = `You are a senior software engineer helping review a GitHub Pull Request.
 
@@ -138,18 +138,17 @@ ${commentBlock}`;
       }
     );
 
-    // Return generated review content
     return (
       response.data.candidates?.[0]?.content?.parts?.[0]?.text ||
       'No review content generated.'
     );
   } catch (error) {
     console.error('Error calling Gemini API:', error.message);
-    process.exit(1); // Exit if Gemini call fails
+    process.exit(1);
   }
 }
 
-// Post the review as a comment on the PR
+// Post the Gemini-generated review to the PR
 async function postReviewComment(review) {
   try {
     await octokit.issues.createComment({
@@ -165,17 +164,15 @@ async function postReviewComment(review) {
   }
 }
 
-// Main execution block
+// Main execution
 (async () => {
   const { author, title, comments, files } = await getPullRequestData();
 
-  // Filter out non-reviewable files (e.g., JSON, Markdown)
   const excludeExtensions = ['.json', '.md'];
   const filteredFiles = files.filter(file =>
     !excludeExtensions.some(ext => file.filename.endsWith(ext))
   );
 
-  // Skip review if no valid files remain
   if (filteredFiles.length === 0) {
     console.log('No reviewable code after filtering.');
     return;
@@ -183,7 +180,6 @@ async function postReviewComment(review) {
 
   let fileSummaries = '';
 
-  // Loop over each file and include current patch + history
   for (const file of filteredFiles) {
     const prevDiffs = await fetchPreviousDiffs(file.filename);
     const historicalSummary = prevDiffs.length
@@ -196,7 +192,6 @@ async function postReviewComment(review) {
   const numFilesChanged = filteredFiles.length;
   const formattedComments = formatPRComments(comments);
 
-  // Generate structured review
   const review = await getGeminiReview(
     fileSummaries,
     author,
@@ -205,6 +200,5 @@ async function postReviewComment(review) {
     formattedComments
   );
 
-  // Post the generated review on the PR
   await postReviewComment(review);
 })();
