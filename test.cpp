@@ -1,7 +1,6 @@
 #include <iostream>
-using namespace std;
 
 int main() {
-    cout << "Hello, world!" << endl
+    // Add your main executives here
     return 0;
 }
