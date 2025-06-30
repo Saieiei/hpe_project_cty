@@ -26,7 +26,8 @@
 ## 📖 About The Project
 
   **LLVM Knowledge Miner** is a GitHub-integrated automation system that enhances pull request (PR) reviews using **Gemini 1.5 Flash**, enabling intelligent, file-wise analysis of code diffs, PR comments, and historical PR activity.
-
+  
+We propose leveraging Gemini, a state-of-the-art Large Language Model (LLM), by integrating it into the software development workflow. This intelligent automation aims to enhance consistency, efficiency, and accuracy in the code review process.
 This project is designed for maintainers and reviewers of large codebases like LLVM to streamline review cycles with structured summaries, improvement suggestions, and consistent markdown-based reports – all powered by LLMs and GitHub Actions.
 
 ## ✨ Features
@@ -83,7 +84,6 @@ This project uses the following major libraries and services:
 2. **Clone the repo**
    ```bash
    git clone https://github.com/Nandees13/hpe_project
-   cd llvm-knowledge-miner
 
 3. **Install dependencies**
      ```bash
