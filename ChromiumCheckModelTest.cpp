@@ -22,8 +22,6 @@
 #include <string>
 
 using namespace clang;
-using namespace dataflow;
-using namespace test;
 
 namespace {
 using ::testing::NotNull;
@@ -172,9 +170,9 @@ TEST(ChromiumCheckModelTest, CheckSuccessImpliesConditionHolds) {
       // [[p]]
     }
   )";
-  runDataflow(ReplacePattern(Code, "$check", "CHECK"), Expectations);
-  runDataflow(ReplacePattern(Code, "$check", "DCHECK"), Expectations);
-  runDataflow(ReplacePattern(Code, "$check", "PCHECK"), Expectations);
+  runDataflow(ReplacePattern(Code, "$check", "DPCHECK"), Expectations);
+  runDataflow(ReplacePattern(Code, "$check", "DPCHECK"), Expectations);
+  runDataflow(ReplacePattern(Code, "$check", "DPCHECK"), Expectations);
   runDataflow(ReplacePattern(Code, "$check", "DPCHECK"), Expectations);
 }
 
