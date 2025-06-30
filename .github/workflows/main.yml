@@ -1,4 +1,4 @@
-name: LLVM Knowledge Miner - PR Review
+name: LLVM Knowledge Miner - Review
 
 on:
   pull_request:
