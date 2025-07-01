@@ -14,6 +14,11 @@ namespace clang {
 namespace analysis {
 namespace {
 
+inline CFGBlock* GetBlockAt(CFG *cfg, unsigned index) {
+  assert(index < cfg->size());
+  return *(cfg->begin() + index);
+}
+
 TEST(CFGDominatorTree, DomTree) {
   const char *Code = R"(enum Kind {
                           A
@@ -31,12 +36,12 @@ TEST(CFGDominatorTree, DomTree) {
   //  [B3 (ENTRY)]  -> [B1] -> [B2] -> [B0 (EXIT)]
   //                  switch  case A
 
-  CFG *cfg = Result.getCFG();
+  auto *cfg = Result.getCFG();
 
   // Basic correctness checks.
   EXPECT_EQ(cfg->size(), 4u);
 
-  CFGBlock *ExitBlock = *cfg->begin();
+  auto *ExitBlock = *cfg->begin();
   EXPECT_EQ(ExitBlock, &cfg->getExit());
 
   CFGBlock *SwitchBlock = *(cfg->begin() + 1);
@@ -51,7 +56,7 @@ TEST(CFGDominatorTree, DomTree) {
   Dom.buildDominatorTree(cfg);
 
   EXPECT_TRUE(Dom.dominates(ExitBlock, ExitBlock));
-  EXPECT_FALSE(Dom.properlyDominates(ExitBlock, ExitBlock));
+  EXPECT_FALSE(PostDom.properlyDominates(EntryBlock, EntryBlock));
   EXPECT_TRUE(Dom.dominates(CaseABlock, ExitBlock));
   EXPECT_TRUE(Dom.dominates(SwitchBlock, ExitBlock));
   EXPECT_TRUE(Dom.dominates(EntryBlock, ExitBlock));
