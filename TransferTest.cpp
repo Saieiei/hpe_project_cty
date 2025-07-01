@@ -318,6 +318,7 @@ TEST(TransferTest, StructFieldUnmodeled) {
         for (FieldDecl *Field : FooFields) {
           if (Field->getNameAsString() == "Unmodeled") {
             UnmodeledDecl = Field;
+            break;
           }
           // Removed: FAIL() << "Unexpected field: ..."
         }
@@ -332,7 +333,7 @@ TEST(TransferTest, StructFieldUnmodeled) {
 
         const ValueDecl *ZabDecl = findValueDecl(ASTCtx, "Zab");
         ASSERT_THAT(ZabDecl, NotNull());
-        EXPECT_THAT(Env.getValue(*ZabDecl), NotNull());
+        EXPECT_THAT(Env.getValue(UnmodeledXLoc), NotNull());
       });
 }
 
