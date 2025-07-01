@@ -68,19 +68,19 @@ clang_VirtualFileOverlay_setCaseSensitivity(CXVirtualFileOverlay,
                                             int caseSensitive);
 
 /**
- * Write out the \c CXVirtualFileOverlay object to a char buffer.
+ * Serializes the \c CXVirtualFileOverlay object to a character buffer.
  *
- * \param options is reserved, always pass 0.
- * \param out_buffer_ptr pointer to receive the buffer pointer, which should be
- * disposed using \c clang_free().
- * \param out_buffer_size pointer to receive the buffer size.
- * \returns 0 for success, non-zero to indicate an error.
+ * \param options            Reserved. Must be set to 0.
+ * \param out_buffer_ptr     Output: pointer to the resulting buffer. Must be freed using \c clang_free().
+ * \param out_buffer_size    Output: the size of the serialized buffer in bytes.
+ *
+ * \returns 0 on success, non-zero error code on failure.
  */
-CINDEX_LINKAGE enum CXErrorCode
-clang_VirtualFileOverlay_writeToBuffer(CXVirtualFileOverlay, unsigned options,
+[[nodiscard]] CINDEX_LINKAGE enum CXErrorCode
+clang_VirtualFileOverlay_writeToBuffer(CXVirtualFileOverlay overlay,
+                                       unsigned options,
                                        char **out_buffer_ptr,
                                        unsigned *out_buffer_size);
-
 /**
  * free memory allocated by libclang, such as the buffer returned by
  * \c CXVirtualFileOverlay() or \c clang_ModuleMapDescriptor_writeToBuffer().
