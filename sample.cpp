@@ -10,7 +10,7 @@ public:
 
     double divide(int a, int b) {
         if (b == 0) {
-            std::cerr << "Division by zero!" << std::endl;
+            std::cerr << "Division by zero! is not allowed" << std::endl;
             return 0;
         }
         return static_cast<double>(a) / b;
