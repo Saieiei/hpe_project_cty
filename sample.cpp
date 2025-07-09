@@ -53,6 +53,7 @@ int main() {
     std::cout << "Reverse: " << reverseString(text) << std::endl;
 
     int n = 10;
+    
     std::cout << "Fibonacci(" << n << "): " << fibonacci(n) << std::endl;
 
     std::vector<int> nums = {1, 2, 3, 4, 5};
