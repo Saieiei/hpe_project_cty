@@ -10,7 +10,7 @@ public:
 
     double divide(int a, int b) {
         if (b == 0) {
-            std::cerr << "Division by zero!" << std::endl;
+            std::cerr << "Division by zero! is not allowed" << std::endl;
             return 0;
         }
         return static_cast<double>(a) / b;
@@ -49,7 +49,7 @@ int main() {
     std::cout << "Divide: " << calc.divide(a, b) << std::endl;
     std::cout << "Modulo: " << calc.modulo(a, b) << std::endl;
 
-    std::string text = "hello";
+    std::string text = "hello sairudra";
     std::cout << "Reverse: " << reverseString(text) << std::endl;
 
     int n = 10;
