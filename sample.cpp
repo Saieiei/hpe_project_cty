@@ -49,7 +49,7 @@ int main() {
     std::cout << "Divide: " << calc.divide(a, b) << std::endl;
     std::cout << "Modulo: " << calc.modulo(a, b) << std::endl;
 
-    std::string text = "hello";
+    std::string text = "hello sairudra";
     std::cout << "Reverse: " << reverseString(text) << std::endl;
 
     int n = 10;
