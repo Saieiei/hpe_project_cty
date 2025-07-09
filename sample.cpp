@@ -2,17 +2,27 @@
 #include <vector>
 #include <string>
 
-class Calculator {
+class AdvancedCalculator {
 public:
     int add(int a, int b) { return a + b; }
     int subtract(int a, int b) { return a - b; }
     int multiply(int a, int b) { return a * b; }
+
     double divide(int a, int b) {
         if (b == 0) {
             std::cerr << "Division by zero!" << std::endl;
             return 0;
         }
         return static_cast<double>(a) / b;
+    }
+
+    // New modulo operation
+    int modulo(int a, int b) {
+        if (b == 0) {
+            std::cerr << "Modulo by zero!" << std::endl;
+            return 0;
+        }
+        return a % b;
     }
 };
 
@@ -31,12 +41,13 @@ int fibonacci(int n) {
 }
 
 int main() {
-    Calculator calc;
-    int a = 10, b = 0;
+    AdvancedCalculator calc;
+    int a = 10, b = 3;
     std::cout << "Add: " << calc.add(a, b) << std::endl;
     std::cout << "Subtract: " << calc.subtract(a, b) << std::endl;
     std::cout << "Multiply: " << calc.multiply(a, b) << std::endl;
     std::cout << "Divide: " << calc.divide(a, b) << std::endl;
+    std::cout << "Modulo: " << calc.modulo(a, b) << std::endl;
 
     std::string text = "hello";
     std::cout << "Reverse: " << reverseString(text) << std::endl;
