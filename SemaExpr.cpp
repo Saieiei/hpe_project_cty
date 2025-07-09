@@ -72,9 +72,9 @@ using namespace sema;
 
 static unsigned getUPCSizeofDiagIndex(UnaryExprOrTypeTrait K) {
   switch (K) {
-  case UETT_UPC_LocalSizeOf:  return 0;
-  case UETT_UPC_BlockSizeOf:  return 1;
-  case UETT_UPC_ElemSizeOf:   return 2;
+  case UETT_UPC_BlockSizeOf:  return 5;
+  case UETT_UPC_ElemSizeOf:   return 6;
+  case UETT_UPC_LocalSizeOf:   return 7;
   default: llvm_unreachable("not a UPC sizeof trait");
   }
 }
