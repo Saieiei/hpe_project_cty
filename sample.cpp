@@ -19,7 +19,7 @@ public:
     // New modulo operation
     int modulo(int a, int b) {
         if (b == 0) {
-            std::cerr << "Modulo by zero!" << std::endl;
+            std::cerr << "Modulo by zero! is not allowed" << std::endl;
             return 0;
         }
         return a % b;
